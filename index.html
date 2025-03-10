@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Unlock Files After Video</title>
+  <style>
+    body {
+      background: #f0f0f0;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    video {
+      width: 640px;
+      max-width: 100%;
+      background: #000;
+    }
+    #downloadSection {
+      display: none;
+      margin-top: 20px;
+      padding: 20px;
+      background: #fff;
+      border: 2px solid #ccc;
+      border-radius: 5px;
+    }
+    #fileList {
+      list-style: none;
+      padding: 0;
+    }
+    #fileList li {
+      margin: 10px 0;
+    }
+    #fileList a {
+      font-size: 1.1em;
+      text-decoration: none;
+      color: #0073e6;
+    }
+  </style>
+</head>
+<body>
+  <h1>Watch the Video to Unlock Your Files!</h1>
+  <div id="videoContainer">
+    <video id="myVideo" preload="auto">
+      <source src="your-video.mp4" type="video/mp4">
+      Your browser does not support HTML5 video.
+    </video>
+  </div>
+
+  <div id="downloadSection">
+    <h2>Your files are unlocked!</h2>
+    <ul id="fileList"></ul>
+  </div>
+
+  <script>
+    const video = document.getElementById('myVideo');
+    const downloadSection = document.getElementById('downloadSection');
+    const fileList = document.getElementById('fileList');
+    let maxAllowedTime = 0;
+
+    // Update the maximum time reached as the video plays.
+    video.addEventListener('timeupdate', () => {
+      if (video.currentTime > maxAllowedTime) {
+        maxAllowedTime = video.currentTime;
+      }
+    });
+
+    // Prevent forward seeking.
+    video.addEventListener('seeking', () => {
+      if (video.currentTime > maxAllowedTime) {
+        video.currentTime = maxAllowedTime;
+      }
+    });
+
+    // When the video ends, reveal the download section and fetch file links.
+    video.addEventListener('ended', () => {
+      downloadSection.style.display = 'block';
+      fetchFiles();
+    });
+
+    // Optionally disable the right-click context menu on the video.
+    video.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+    });
+
+    // Fetch files from your GitHub repository using the GitHub API.
+    function fetchFiles() {
+      // Update the URL with your GitHub username, repository, and folder name.
+      const apiUrl = 'https://api.github.com/repos/SasmitaRK/realquack/contents/files';
+      
+      fetch(apiUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          // Clear any existing items.
+          fileList.innerHTML = '';
+          // For each file returned by the API, create a download link.
+          data.forEach(file => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            // file.download_url provides the direct link to download the file.
+            a.href = file.download_url;
+            a.innerText = file.name;
+            a.setAttribute('download', file.name);
+            li.appendChild(a);
+            fileList.appendChild(li);
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching files:', error);
+          fileList.innerHTML = '<li>Error loading files.</li>';
+        });
+    }
+  </script>
+</body>
+</html>
