@@ -40,8 +40,8 @@
 <body>
   <h1>Watch the Video to Unlock Your Files!</h1>
   <div id="videoContainer">
-    <video id="myVideo" preload="auto">
-      <source src="Norm McDonald - Moth Joke [napisy PL].mp4" type="video/mp4">
+    <video id="myVideo" preload="auto" controls>
+      <source src="moth_joke.mp4" type="video/mp4">
       Your browser does not support HTML5 video.
     </video>
   </div>
@@ -84,8 +84,8 @@
 
     // Fetch files from your GitHub repository using the GitHub API.
     function fetchFiles() {
-      // Update the URL with your GitHub username, repository, and folder name.
-      const apiUrl = 'https://api.github.com/repos/SasmitaRK/realqwack/Norm McDonald - Moth Joke [napisy PL].mp4/files';
+      // Updated API URL to access the "files" folder in your repository.
+      const apiUrl = 'https://api.github.com/repos/SasmitaRK/realqwack/contents/files';
       
       fetch(apiUrl)
         .then(response => {
@@ -101,7 +101,6 @@
           data.forEach(file => {
             const li = document.createElement('li');
             const a = document.createElement('a');
-            // file.download_url provides the direct link to download the file.
             a.href = file.download_url;
             a.innerText = file.name;
             a.setAttribute('download', file.name);
