@@ -4,10 +4,78 @@
   <meta charset="UTF-8">
   <title>The Most Important Video You'll Ever Watch</title>
   <style>
-    /* Previous styles remain */
+    body {
+      background: #f0f0f0;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    #videoContainer {
+      position: relative;
+      width: 640px;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    video {
+      width: 100%;
+      background: #000;
+    }
+    /* Custom controls */
+    #customControls {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+    #playPauseButton {
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
     #progressContainer {
+      width: 60%;
+      height: 10px;
+      background: #ccc;
+      border-radius: 5px;
+      overflow: hidden;
       pointer-events: none; /* Disable progress bar clicks */
     }
+    #progressBar {
+      height: 100%;
+      width: 0%;
+      background: #0073e6;
+      transition: width 0.2s;
+    }
+    /* Download Section */
+    #downloadSection {
+      display: none;
+      margin-top: 20px;
+      padding: 20px;
+      background: #fff;
+      border: 2px solid #ccc;
+      border-radius: 5px;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+    }
+    #downloadSection.show {
+      display: block;
+      opacity: 1;
+    }
+    #fileLink {
+      font-size: 1.2em;
+      text-decoration: none;
+      color: #0073e6;
+      padding: 10px 20px;
+      border: 2px solid #0073e6;
+      border-radius: 5px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    #fileLink:hover {
+      background-color: #0073e6;
+      color: #fff;
+    }
+    /* Modal styles */
     .annoying-modal {
       display: none;
       position: fixed;
@@ -40,22 +108,52 @@
   </style>
 </head>
 <body>
-  <!-- Previous HTML remains -->
+  <h1>The Most Important Video You'll Ever Watch</h1>
+  <div id="videoContainer">
+    <video id="myVideo" preload="auto">
+      <source src="mothjoke.mp4" type="video/mp4">
+      Your browser does not support HTML5 video.
+    </video>
+    <!-- Custom controls -->
+    <div id="customControls">
+      <button id="playPauseButton">Play</button>
+      <div id="progressContainer">
+        <div id="progressBar"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Download section: appears after video ends -->
+  <div id="downloadSection">
+    <h2>Your files are unlocked!</h2>
+    <p>
+      <a id="fileLink" href="catndawg.jpg" download="catndawg.jpg">Download CatnDawg Image</a>
+    </p>
+  </div>
+  
+  <!-- Modal for skip detection -->
   <div class="annoying-modal" id="skipModal">
     <h3>🚨 Cheater Detected! 🚨</h3>
     <p id="skipMessage"></p>
     <button onclick="closeModal()">I'll be good, I promise!</button>
   </div>
-
+  
+  <!-- Fake loader for generating download link -->
   <div class="fake-loader" id="fakeLoader">
     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
       Generating download link...<br>
       <span id="fakePercentage">0%</span>
     </div>
   </div>
-
+  
   <script>
-    // Anti-skip measures
+    // Get element references
+    const video = document.getElementById('myVideo');
+    const playPauseButton = document.getElementById('playPauseButton');
+    const progressBar = document.getElementById('progressBar');
+    const downloadSection = document.getElementById('downloadSection');
+    
+    // Anti-skip measures variables
     let lastValidTime = 0;
     let skipAttempts = 0;
     const snarkyMessages = [
@@ -70,17 +168,33 @@
       "Error 404: Skip function not found",
       "You're supposed to WATCH it!"
     ];
-
+    
+    // Custom play/pause button functionality
+    playPauseButton.addEventListener('click', () => {
+      if (video.paused) {
+        video.play();
+        playPauseButton.textContent = 'Pause';
+      } else {
+        video.pause();
+        playPauseButton.textContent = 'Play';
+      }
+    });
+    
+    // Update progress bar and monitor for skip attempts
     video.addEventListener('timeupdate', () => {
+      // If the user tries to jump ahead by more than 0.5 seconds, revert and show warning
       if (video.currentTime > lastValidTime + 0.5) {
         video.currentTime = lastValidTime;
         showSkipMessage();
       } else {
         lastValidTime = video.currentTime;
       }
-      progressBar.style.width = (video.currentTime / video.duration) * 100 + '%';
+      // Update progress bar width (if video.duration is available)
+      if(video.duration) {
+        progressBar.style.width = (video.currentTime / video.duration) * 100 + '%';
+      }
     });
-
+    
     function showSkipMessage() {
       skipAttempts++;
       document.body.classList.add('punishment-mode');
@@ -91,14 +205,14 @@
         document.getElementById('skipMessage').textContent = "Keep trying and I'll add more unskippable ads!";
       }
     }
-
+    
     function closeModal() {
       document.getElementById('skipModal').style.display = 'none';
       document.body.classList.remove('punishment-mode');
       video.play();
     }
-
-    // Random popup during playback
+    
+    // Random popup during playback for verification
     setInterval(() => {
       if (!video.paused && !video.ended) {
         video.pause();
@@ -112,9 +226,9 @@
         `;
         document.body.appendChild(popup);
       }
-    }, 30000 + Math.random() * 30000); // Random popups between 30-60 seconds
-
-    // Fake loader when video ends
+    }, 30000 + Math.random() * 30000); // Random intervals between 30-60 seconds
+    
+    // Fake loader when video ends before revealing the download section
     video.addEventListener('ended', () => {
       document.getElementById('fakeLoader').style.display = 'block';
       let fakePercent = 0;
@@ -129,16 +243,16 @@
         }
       }, 500);
     });
-
-    // Prevent leaving
+    
+    // Prevent leaving the page while video is playing
     window.addEventListener('beforeunload', (e) => {
       if (!video.ended) {
         e.preventDefault();
         e.returnValue = 'Are you sure you want to leave? The video was almost getting good!';
       }
     });
-
-    // Disable all keys
+    
+    // Disable all key presses during video playback to discourage cheating
     document.addEventListener('keydown', (e) => {
       if (!video.ended) {
         e.preventDefault();
