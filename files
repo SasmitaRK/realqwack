@@ -1,0 +1,17 @@
+[
+  {
+    "type": "video",
+    "name": "Example Video",
+    "path": "media/example.mp4"
+  },
+  {
+    "type": "audio",
+    "name": "Example Audio",
+    "path": "media/example.mp3"
+  },
+  {
+    "type": "image",
+    "name": "catndawgImage",
+    "path": "C:\Users\praha\Downloads\catndawg.jpg"
+  }
+]
