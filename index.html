@@ -10,10 +10,41 @@
       text-align: center;
       padding: 20px;
     }
-    video {
+    #videoContainer {
+      position: relative;
       width: 640px;
       max-width: 100%;
+      margin: 0 auto;
+    }
+    video {
+      width: 100%;
       background: #000;
+    }
+    /* Custom controls container */
+    #customControls {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+    #playPauseButton {
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #progressContainer {
+      width: 60%;
+      height: 10px;
+      background: #ccc;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    #progressBar {
+      height: 100%;
+      width: 0%;
+      background: #0073e6;
+      transition: width 0.2s;
     }
     #downloadSection {
       display: none;
@@ -47,10 +78,18 @@
 <body>
   <h1>Watch the Video to Unlock Your Files!</h1>
   <div id="videoContainer">
-    <video id="myVideo" preload="auto" controls>
+    <!-- Removed native controls -->
+    <video id="myVideo" preload="auto">
       <source src="mothjoke.mp4" type="video/mp4">
       Your browser does not support HTML5 video.
     </video>
+    <!-- Custom controls -->
+    <div id="customControls">
+      <button id="playPauseButton">Play</button>
+      <div id="progressContainer">
+        <div id="progressBar"></div>
+      </div>
+    </div>
   </div>
 
   <div id="downloadSection">
@@ -62,36 +101,52 @@
 
   <script>
     const video = document.getElementById('myVideo');
+    const playPauseButton = document.getElementById('playPauseButton');
+    const progressBar = document.getElementById('progressBar');
     const downloadSection = document.getElementById('downloadSection');
     let maxAllowedTime = 0;
 
-    // Track the maximum time reached during playback.
+    // Toggle play/pause using the custom button.
+    playPauseButton.addEventListener('click', () => {
+      if (video.paused) {
+        video.play();
+        playPauseButton.textContent = 'Pause';
+      } else {
+        video.pause();
+        playPauseButton.textContent = 'Play';
+      }
+    });
+
+    // Update the maximum time reached and progress bar.
     video.addEventListener('timeupdate', () => {
       if (video.currentTime > maxAllowedTime) {
         maxAllowedTime = video.currentTime;
       }
+      const progressPercent = (video.currentTime / video.duration) * 100;
+      progressBar.style.width = progressPercent + '%';
     });
 
-    // Prevent forward seeking by resetting the current time.
+    // Prevent forward seeking.
     video.addEventListener('seeking', () => {
       if (video.currentTime > maxAllowedTime) {
         video.currentTime = maxAllowedTime;
       }
     });
 
-    // Prevent playback speed changes.
+    // Prevent changes in playback speed.
     video.addEventListener('ratechange', () => {
       if (video.playbackRate !== 1) {
         video.playbackRate = 1;
       }
     });
 
-    // When the video ends, reveal the download section with a fade-in effect.
+    // When the video ends, show the download section.
     video.addEventListener('ended', () => {
       downloadSection.classList.add('show');
+      playPauseButton.disabled = true;
     });
 
-    // Disable the right-click context menu on the video.
+    // Disable right-click on the video.
     video.addEventListener('contextmenu', (e) => {
       e.preventDefault();
     });
